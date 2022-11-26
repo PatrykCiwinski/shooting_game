@@ -21,8 +21,12 @@ target_images=[[],[],[]]
 targets={1:[10, 5, 3],
          2:[12,8, 5],
          3:[15, 12, 8, 3]}
-level=3
-
+level=1
+points=0
+shoot=False
+total_shoots=0
+mode=0
+ammo=0
 for i in range(1,4):
     bgs.append(pygame.image.load(f'assets/bgs/{i}.png'))
     banners.append(pygame.image.load(f'assets/banners/{i}.png'))
@@ -38,7 +42,7 @@ for i in range(1,4):
 def draw_gun():
     mouse_pos=pygame.mouse.get_pos()
     gun_point=(WIDTH/2, HEIGHT-200)
-    lasers=['red', 'blue', 'purple']
+    lasers=['red', 'purple', 'green']
     clicks=pygame.mouse.get_pressed()
     if mouse_pos[0] != gun_point[0]:
         slope =(mouse_pos[1]-gun_point[1])/(mouse_pos[0]-gun_point[0])
@@ -108,6 +112,17 @@ def move_level(coords):
             else:
                 coords[i][j]=(my_coords[0]-2**i, my_coords[1])
     return coords
+
+def check_shoot(targets, coords):
+    global points
+    mouse_pos=pygame.mouse.get_pos()
+    for i in range(len(targets)):
+        for j in range(len(targets[i])):
+            if targets[i][j].collidepoint(mouse_pos):
+                coords[i].pop(j)
+                points+=10+10*(i**2)
+    return coords
+
 while run:
     timer.tick(fps)
 
@@ -117,18 +132,38 @@ while run:
     if level ==1:
         target_boxes=draw_level(one_coords)
         one_coords=move_level(one_coords)
+        if shoot:
+            one_coords = check_shoot(target_boxes,one_coords)
+            shoot=False
     elif level == 2:
         target_boxes=draw_level(two_coords)
         two_coords=move_level(two_coords)
+        if shoot:
+            two_coords=check_shoot(target_boxes,two_coords)
+            shoot=False
     elif level == 3:
         target_boxes=draw_level(three_coords)
         three_coords=move_level(three_coords)
+        if shoot:
+            three_coords=check_shoot(target_boxes,three_coords)
+            shoot=False
     if level>0:
         draw_gun()
 
     for event in pygame.event.get():
         if event.type ==pygame.QUIT:
             run=False
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button==1:
+            move_position=pygame.mouse.get_pos()
+            if (0<move_position[0]<WIDTH) and (0<move_position[1],HEIGHT-200):
+                shoot=True
+                total_shoots+=1
+                if mode==1:
+                    ammo-=1
+    if level>0:
+        if target_boxes ==[[],[],[]] and level<3:
+            level+=1
+
 
     pygame.display.flip()
 pygame.quit()
