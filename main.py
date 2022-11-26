@@ -123,6 +123,12 @@ def check_shoot(targets, coords):
                 points+=10+10*(i**2)
     return coords
 
+
+def draw_score():
+    points_text=font.render(f'Point: {points}', True, 'black')
+    screen.blit(points_text, (320,660))
+
+
 while run:
     timer.tick(fps)
 
@@ -149,6 +155,7 @@ while run:
             shoot=False
     if level>0:
         draw_gun()
+        draw_score()
 
     for event in pygame.event.get():
         if event.type ==pygame.QUIT:
